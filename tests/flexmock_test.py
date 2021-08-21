@@ -172,9 +172,9 @@ class RegularClass:
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").times(1)
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
-        assert_raises(MethodCallError, expectation.verify)
+        assert_raises(MethodCallError, expectation._verify)
         mock.method_foo()
-        expectation.verify()
+        expectation._verify()
 
     def test_flexmock_should_check_raised_exceptions(self):
         mock = flexmock(name="temp")
