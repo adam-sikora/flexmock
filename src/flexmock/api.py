@@ -435,7 +435,7 @@ class Mock:
             # e.g. open()
             for _, expectations in FlexmockContainer.flexmock_objects.items():
                 for expectation in expectations:
-                    _getattr(expectation, "reset")()
+                    _getattr(expectation, "_reset")()
             raise MethodSignatureError(error_msg)
 
         return mock_method
@@ -449,7 +449,7 @@ def flexmock_teardown() -> None:
     for mock_object, expectations in FlexmockContainer.flexmock_objects.items():
         saved[mock_object] = expectations[:]
         for expectation in expectations:
-            _getattr(expectation, "reset")()
+            _getattr(expectation, "_reset")()
     for mock in saved:
         obj = mock._object
         if not isinstance(obj, Mock) and not inspect.isclass(obj):
@@ -669,7 +669,7 @@ class Expectation:
         open() might be stubbed out and the resulting runner errors are very
         difficult to diagnose.
         """
-        self.reset()
+        self._reset()
         raise exception(message)
 
     def _match_args(self, given_args: Any) -> bool:
@@ -969,7 +969,7 @@ class Expectation:
                     failed = True
         return failed, message
 
-    def reset(self) -> None:
+    def _reset(self) -> None:
         """Returns the methods overriden by this expectation to their originals."""
         _mock = _getattr(self, "_mock")
         if not isinstance(_mock, Mock):
