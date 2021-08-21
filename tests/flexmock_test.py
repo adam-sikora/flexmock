@@ -1299,6 +1299,46 @@ class RegularClass:
         flexmock(user).should_call("get_stuff").and_raise(FlexmockError)
         user.get_stuff()
 
+    def test_flexmock_should_reraise_exception_in_spy(self):
+        class RaisesException:
+            def get_stuff(self):
+                raise RuntimeError("foo")
+
+        instance = RaisesException()
+        flexmock(instance).should_call("get_stuff").once()
+        with assert_raises(RuntimeError, "foo"):
+            instance.get_stuff()
+
+    def test_flexmock_should_reraise_exception_in_spy_with_return_values(self):
+        class RaisesException:
+            def get_stuff(self):
+                raise RuntimeError("bar")
+
+        instance = RaisesException()
+        flexmock(instance).should_call("get_stuff").and_return("foo").once()
+        with assert_raises(RuntimeError, "bar"):
+            instance.get_stuff()
+
+    def test_and_raise_with_value_that_is_not_a_class(self):
+        class RaisesException:
+            def get_stuff(self):
+                raise RuntimeError("baz")
+
+        instance = RaisesException()
+        flexmock(instance).should_call("get_stuff").and_raise(RuntimeError("foo")).once()
+        with assert_raises(
+            ExceptionClassError,
+            re.compile(
+                r"Raised exception for call get_stuff did not match expectation:\n"
+                # Python 3.6 contains comma after 'foo'
+                r"  Expected:\tRuntimeError\('foo',?\)\n"
+                r"  Raised:\t<class 'RuntimeError'>\n\n"
+                r"Did you try to call and_raise with an instance\?\n"
+                r'Instead of and_raise\(Exception\("arg"\)\), try and_raise\(Exception, "arg"\)',
+            ),
+        ):
+            instance.get_stuff()
+
     def test_flexmock_should_blow_up_on_wrong_spy_return_values(self):
         class User:
             def get_stuff(self):
